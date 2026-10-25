@@ -1,24 +1,61 @@
 
 import { useState, useEffect } from 'react'
 
+const FALLBACK_SAMPLES = [
+  {
+    meter: 'aataveladi',
+    meter_telugu: 'ఆటవెలది',
+    source: 'Vemana',
+    text: 'ఉప్పు కప్పురంబు నొక్క పోలిక నుండు\nచూడ చూడ రుచుల జాడ తెలియు\nపురుషులందు పుణ్య పురుషులు వేరయా\nవిశ్వదాభిరామ వినుర వేమ'
+  },
+  {
+    meter: 'kandamu',
+    meter_telugu: 'కందము',
+    source: 'Sumathi',
+    text: 'అక్కరకు రాని చుట్టము\nమ్రొక్కిన వరమియ్యని వేల్పు మొదలుం దన పే\nరెక్కిన పనికిమాలిన\nచొక్కపు బంగారమును రాసులకు రావు సుమీ'
+  },
+  {
+    meter: 'seesamu',
+    meter_telugu: 'సీసము',
+    source: 'Sample Poem',
+    text: 'శ్రీమదనంత లక్ష్మీ యుతోరః స్థల\nచతురాననాండ పూరిత పిచండ\nధర చక్ర ఖడ్గ గదా శరాసనహస్త\nనిఖిల వేదాంత వర్ణిత చరిత్ర'
+  }
+]
+
 export default function PoemInput({ onAnalyze, isLoading }) {
   const [text, setText] = useState('')
-  const [samples, setSamples] = useState([])
+  const [samples, setSamples] = useState(FALLBACK_SAMPLES)
   const [showSamples, setShowSamples] = useState(false)
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/samples`)
+    const apiBase = (
+      import.meta.env.VITE_API_URL || 'http://localhost:8000'
+    ).replace(/\/+$/, '')
+
+    fetch(`${apiBase}/api/samples`)
       .then(response => {
         if (!response.ok) {
-          throw new Error('Failed to load samples')
+          throw new Error(`Samples API error: ${response.status}`)
         }
         return response.json()
       })
       .then(data => {
-        setSamples(Array.isArray(data) ? data : [])
+        const list = Array.isArray(data)
+          ? data
+          : data?.samples || data?.poems || data?.data || []
+
+        if (Array.isArray(list) && list.length > 0) {
+          const validSamples = list.filter(
+            sample => sample && typeof sample.text === 'string'
+          )
+
+          if (validSamples.length > 0) {
+            setSamples(validSamples)
+          }
+        }
       })
       .catch(error => {
-        console.error('Error loading sample poems:', error)
+        console.error('Could not load API samples; using fallback poems:', error)
       })
   }, [])
 
@@ -28,14 +65,14 @@ export default function PoemInput({ onAnalyze, isLoading }) {
     }
   }
 
-  const handleKeyDown = (e) => {
-    if (e.ctrlKey && e.key === 'Enter') {
+  const handleKeyDown = (event) => {
+    if (event.ctrlKey && event.key === 'Enter') {
       handleSubmit()
     }
   }
 
   const loadSample = (sample) => {
-    setText(sample.text)
+    setText(sample.text || '')
     setShowSamples(false)
   }
 
@@ -52,7 +89,8 @@ export default function PoemInput({ onAnalyze, isLoading }) {
         <button
           type="button"
           className="samples-toggle"
-          onClick={() => setShowSamples(!showSamples)}
+          onClick={() => setShowSamples(previous => !previous)}
+          aria-expanded={showSamples}
         >
           <span>⚡ Try Example Poem</span>
           <span className={`arrow ${showSamples ? 'open' : ''}`}>
@@ -62,22 +100,18 @@ export default function PoemInput({ onAnalyze, isLoading }) {
 
         {showSamples && (
           <div className="samples-dropdown">
-            {samples.length > 0 ? (
-              samples.map((s, i) => (
-                <button
-                  type="button"
-                  key={i}
-                  className="sample-item"
-                  onClick={() => loadSample(s)}
-                >
-                  <span>{s.meter_telugu}</span>
-                  <span>{s.source}</span>
-                  <span>{s.meter}</span>
-                </button>
-              ))
-            ) : (
-              <p>No sample poems available. Please try again later.</p>
-            )}
+            {samples.map((sample, index) => (
+              <button
+                type="button"
+                key={`${sample.source || 'sample'}-${index}`}
+                className="sample-item"
+                onClick={() => loadSample(sample)}
+              >
+                <span>{sample.meter_telugu || sample.meter || 'Poem'}</span>
+                <span>{sample.source || 'Sample'}</span>
+                <span>{sample.meter || ''}</span>
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -86,7 +120,7 @@ export default function PoemInput({ onAnalyze, isLoading }) {
         id="poem-input"
         className="poem-textarea"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={event => setText(event.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="శ్రీమదనంత లక్ష్మీ యుతోరః స్థల చతురాననాండ పూరిత పిచండ..."
         disabled={isLoading}
@@ -94,6 +128,7 @@ export default function PoemInput({ onAnalyze, isLoading }) {
 
       <button
         id="analyze-btn"
+        type="button"
         className="btn-primary"
         onClick={handleSubmit}
         disabled={isLoading || text.trim().length < 10}
