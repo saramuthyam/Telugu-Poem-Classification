@@ -5,6 +5,7 @@ requires-python = ">=3.12"
 dependencies = [
     "numpy",
     "fastapi",
+    "tensorflow",
 ]
 
 [tool.vercel]
