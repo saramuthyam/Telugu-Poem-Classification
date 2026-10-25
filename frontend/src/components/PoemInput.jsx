@@ -62,9 +62,13 @@ export default function PoemInput({ onAnalyze, isLoading }) {
                   className="sample-item"
                   onClick={() => loadSample(s)}
                 >
-                  <span className="sample-meter">{s.meter_telugu}</span>
-                  <span className="sample-source">{s.source}</span>
-                  <span className="sample-eng">{s.meter}</span>
+                  <span>{s.meter_telugu}</span>
+                  <span>{s.source}</span>
+                  <span>{s.meter}</span>
+      </button>
+    ))}
+  </div>
+)}
                 </button>
               ))}
             </div>
