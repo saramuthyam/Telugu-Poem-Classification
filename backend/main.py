@@ -10,7 +10,7 @@ Endpoints:
 Run with: uvicorn backend.main:app --reload --port 8000
 """
 # Trigger fresh backend deployment
-import config
+
 import os
 import re
 import sys
