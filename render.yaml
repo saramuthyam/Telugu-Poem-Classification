@@ -1,8 +1,0 @@
-services:
-  - type: web
-    name: telugu-poem-classification-api
-    runtime: python
-    plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
-    healthCheckPath: /docs
