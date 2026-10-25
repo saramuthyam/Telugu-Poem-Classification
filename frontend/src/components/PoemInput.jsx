@@ -5,12 +5,21 @@ export default function PoemInput({ onAnalyze, isLoading }) {
   const [samples, setSamples] = useState([])
   const [showSamples, setShowSamples] = useState(false)
 
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/samples`)
-      .then(r => r.json())
-      .then(data => setSamples(data))
-      .catch(() => {})
-  }, [])
+ useEffect(() => {
+  fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/samples`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to load samples');
+      }
+      return response.json();
+    })
+    .then(data => {
+      setSamples(Array.isArray(data) ? data : []);
+    })
+    .catch(error => {
+      console.error('Error loading sample poems:', error);
+    });
+}, []);
 
   const handleSubmit = () => {
     if (text.trim().length >= 10) {
