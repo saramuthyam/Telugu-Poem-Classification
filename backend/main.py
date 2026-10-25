@@ -143,10 +143,7 @@ def load_all_models():
         with open(config.SOURCE_ENCODER_PATH, 'rb') as f:
             _models['source_encoder'] = pickle.load(f)
 
-        if os.path.exists(config.CHANDAS_MODEL_PATH):
-            _models['chandas_model'] = tf.keras.models.load_model(
-                config.CHANDAS_MODEL_PATH
-            )
+      
         if os.path.exists(config.MULTITASK_MODEL_PATH):
             _models['multitask_model'] = tf.keras.models.load_model(
                 config.MULTITASK_MODEL_PATH
@@ -482,19 +479,7 @@ def predict_poem(text: str) -> dict:
 
     results = {}
 
-    # Single-task prediction (chandas)
-    if 'chandas_model' in _models:
-        pred = _models['chandas_model'].predict(padded, verbose=0)[0]
-        chandas_idx = int(np.argmax(pred))
-        results['chandas'] = _models['chandas_encoder'].classes_[chandas_idx]
-        results['chandas_telugu'] = CHANDAS_TELUGU.get(results['chandas'], '')
-        results['chandas_confidence'] = float(pred[chandas_idx])
-        results['chandas_all'] = [
-            {'label': _models['chandas_encoder'].classes_[i],
-             'probability': float(pred[i])}
-            for i in range(len(pred))
-        ]
-        results['chandas_all'].sort(key=lambda x: x['probability'], reverse=True)
+
 
     # Multi-task prediction
     if 'multitask_model' in _models:
