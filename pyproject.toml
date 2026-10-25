@@ -1,9 +1,11 @@
 [project]
 name = "telugu-poem-classification"
-version = "0.1.0"
+version = "1.0.0"
 requires-python = ">=3.12"
 dependencies = [
     "numpy",
     "fastapi",
-    "uvicorn",
 ]
+
+[tool.vercel]
+entrypoint = "backend.main:app"
