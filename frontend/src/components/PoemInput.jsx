@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 
 export default function PoemInput({ onAnalyze, isLoading }) {
@@ -5,21 +6,21 @@ export default function PoemInput({ onAnalyze, isLoading }) {
   const [samples, setSamples] = useState([])
   const [showSamples, setShowSamples] = useState(false)
 
- useEffect(() => {
-  fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/samples`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Failed to load samples');
-      }
-      return response.json();
-    })
-    .then(data => {
-      setSamples(Array.isArray(data) ? data : []);
-    })
-    .catch(error => {
-      console.error('Error loading sample poems:', error);
-    });
-}, []);
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/samples`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to load samples')
+        }
+        return response.json()
+      })
+      .then(data => {
+        setSamples(Array.isArray(data) ? data : [])
+      })
+      .catch(error => {
+        console.error('Error loading sample poems:', error)
+      })
+  }, [])
 
   const handleSubmit = () => {
     if (text.trim().length >= 10) {
@@ -42,22 +43,29 @@ export default function PoemInput({ onAnalyze, isLoading }) {
     <div>
       <div className="section-header">
         <span className="section-header-icon">✍️</span>
-        <span className="section-header-text">Enter Your Telugu Poem</span>
+        <span className="section-header-text">
+          Enter Your Telugu Poem
+        </span>
       </div>
 
-     {/* Sample Poems Dropdown */}
-        <div className="samples-container">
-          <button
-            className="samples-toggle"
-            onClick={() => setShowSamples(!showSamples)}
-          >
-            <span>⚡ Try Example Poem</span>
-            <span className={`arrow ${showSamples ? 'open' : ''}`}>▶</span>
-          </button>
-          {showSamples && (
-            <div className="samples-dropdown">
-              {samples.map((s, i) => (
+      <div className="samples-container">
+        <button
+          type="button"
+          className="samples-toggle"
+          onClick={() => setShowSamples(!showSamples)}
+        >
+          <span>⚡ Try Example Poem</span>
+          <span className={`arrow ${showSamples ? 'open' : ''}`}>
+            ▶
+          </span>
+        </button>
+
+        {showSamples && (
+          <div className="samples-dropdown">
+            {samples.length > 0 ? (
+              samples.map((s, i) => (
                 <button
+                  type="button"
                   key={i}
                   className="sample-item"
                   onClick={() => loadSample(s)}
@@ -65,16 +73,14 @@ export default function PoemInput({ onAnalyze, isLoading }) {
                   <span>{s.meter_telugu}</span>
                   <span>{s.source}</span>
                   <span>{s.meter}</span>
-      </button>
-    ))}
-  </div>
-)}
                 </button>
-              ))}
-            </div>
-          )}
-        </div>
-      
+              ))
+            ) : (
+              <p>No sample poems available. Please try again later.</p>
+            )}
+          </div>
+        )}
+      </div>
 
       <textarea
         id="poem-input"
@@ -98,7 +104,7 @@ export default function PoemInput({ onAnalyze, isLoading }) {
             Analyzing…
           </>
         ) : (
-          <>🔍  Analyze Poem</>
+          <>🔍 Analyze Poem</>
         )}
       </button>
     </div>
